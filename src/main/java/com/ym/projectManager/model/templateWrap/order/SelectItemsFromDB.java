@@ -3,11 +3,12 @@ package com.ym.projectManager.model.templateWrap.order;
 import com.ym.projectManager.model.Item;
 
 public class SelectItemsFromDB {
-    public SelectItemsFromDB() {
-    }
 
     private boolean selected = false;
     private Item item;
+
+    public SelectItemsFromDB() {
+    }
 
     public boolean isSelected() {
         return selected;
