@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.ym.projectManager.dto.ParcelTrackingDto;
 import com.ym.projectManager.model.Parcel;
 import com.ym.projectManager.model.TrackParcel;
 import com.ym.projectManager.model.comparator.TrackParcelComparator;
@@ -11,15 +12,17 @@ import com.ym.projectManager.repository.ParcelRepository;
 import com.ym.projectManager.repository.TrackParcelRepository;
 import com.ym.projectManager.service.ParcelService;
 import com.ym.projectManager.service.TrackerService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
+@RequiredArgsConstructor
 @Service
 public class ParcelServiceImpl implements ParcelService {
     private final ParcelRepository parcelRepository;
@@ -48,10 +51,23 @@ public class ParcelServiceImpl implements ParcelService {
 
     }
 
-    public ParcelServiceImpl(ParcelRepository parcelRepository, TrackParcelRepository trackParcelRepository, TrackerService trackerService) {
-        this.parcelRepository = parcelRepository;
-        this.trackParcelRepository = trackParcelRepository;
-        this.trackerService = trackerService;
+    @Override
+    public Parcel createOrUpdateParcel(Parcel parcel){
+        if (parcel.getTrackNumber().length() > 1)
+            if (parcel.getParcelId() == null) {
+                return parcelRepository.save(parcel);
+            } else {
+                return parcelRepository.saveAndFlush(parcel);
+            }
+        else {
+            return null;
+        }
+    }
+
+    @Override
+    public ParcelTrackingDto getParcelTracking(long parcelId){
+        Parcel parcel = parcelRepository.getParcelByParcelId(parcelId);
+        return new ParcelTrackingDto(parcel, parcel.getTrackParcels());
     }
 
     @Override
@@ -60,16 +76,13 @@ public class ParcelServiceImpl implements ParcelService {
         StringBuilder requestData = new StringBuilder("[");
         Optional<Parcel> notDeliveredParcel = parcelRepository.findFirstByDeliveredIsFalseAndTrackNumberIsNotNullOrderByLastUpdateDesc();
         if (notDeliveredParcel.isPresent()) {
-            if (!dateFormat.format(notDeliveredParcel.get().getLastUpdate())
-                    .equals(dateFormat.format(new Date()))) {
-
+            if(!notDeliveredParcel.get().getLastUpdate().equals(LocalDate.now())){
                 Set<Parcel> parcels = parcelRepository.findAllByDeliveredIsFalse();
                 if (parcels != null) {
                     parcels.forEach(parcel -> {
                         requestData.append("{\"number\": \"");
                         requestData.append(parcel.getTrackNumber() + "\"},");
                     });
-
                     requestData.deleteCharAt(requestData.length() - 1).append("]");
                     try {
                         String result = trackerService.orderOnlineByJson(requestData.toString(), "getTrackInfo");
@@ -79,12 +92,8 @@ public class ParcelServiceImpl implements ParcelService {
                         e.printStackTrace();
                     }
                 }
-
-
             }
         }
-
-
     }
 
     private void parseJsonAndSaveData(JsonObject trackInfo) {
@@ -106,7 +115,7 @@ public class ParcelServiceImpl implements ParcelService {
 
 
                 JsonArray tracking = track.get("z1").getAsJsonArray();
-                Parcel newParcel = new Parcel(trackNum, lastStatus.toString(), new Date(), delivered);
+                Parcel newParcel = new Parcel(trackNum, lastStatus.toString(), LocalDate.now(), delivered);
                 Set<TrackParcel> trackParcel = new HashSet<>();
 
                 for (JsonElement trackStatus : tracking) {
@@ -121,7 +130,7 @@ public class ParcelServiceImpl implements ParcelService {
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
-                    System.out.println(stat);
+
                 }
                 newParcel.setTrackParcels(trackParcel);
                 saveParcel(newParcel);
@@ -139,7 +148,6 @@ public class ParcelServiceImpl implements ParcelService {
         if (oldTrackParcel != null) {
             newTrackParcel.removeAll(oldTrackParcel);
         }
-
 
         if (newTrackParcel.size() > 0) {
             newTrackParcel.stream().sorted(new TrackParcelComparator().reversed()).forEach(status -> {

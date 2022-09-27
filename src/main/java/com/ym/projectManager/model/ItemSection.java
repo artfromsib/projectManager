@@ -1,11 +1,22 @@
 package com.ym.projectManager.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import javax.persistence.*;
 import java.util.Objects;
 import java.util.Set;
 
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
 @Entity
 @Table(name = "section")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ItemSection {
 
     @Id
@@ -15,19 +26,10 @@ public class ItemSection {
     private Long itemSectionId;
     private String name;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "itemSection", fetch = FetchType.LAZY,
             cascade = CascadeType.PERSIST)
     private Set<Item> items;
-
-    public ItemSection(Long ItemSectionId, String name, Set<Item> items) {
-        this.itemSectionId = ItemSectionId;
-        this.name = name;
-        this.items = items;
-    }
-
-    public ItemSection() {
-
-    }
 
     public ItemSection(String name) {
         this.name = name;
@@ -36,31 +38,6 @@ public class ItemSection {
     public ItemSection(Long ItemSectionId, String name) {
         this.itemSectionId = ItemSectionId;
         this.name = name;
-    }
-
-    public Long getItemSectionId() {
-        return itemSectionId;
-    }
-
-    public void setItemSectionId(Long id) {
-        this.itemSectionId = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-
-    public Set<Item> getItems() {
-        return this.items;
-    }
-
-    public void setItems(Set<Item> items) {
-        this.items = items;
     }
 
     @Override

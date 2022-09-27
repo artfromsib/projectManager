@@ -1,16 +1,28 @@
 package com.ym.projectManager.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.*;
 import com.ym.projectManager.model.comparator.TrackParcelComparator;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
 @Entity
 @Table(name = "parcel")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "parcelId"
+)
 public class Parcel {
     @Id
     @Column(name = "parcel_id", nullable = false)
@@ -19,35 +31,27 @@ public class Parcel {
     private Long parcelId;
     private String trackNumber;
     private String lastStatus;
+    @JsonFormat(pattern = "dd/MM/yyyy")
+    private LocalDate shippingDate;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "parcel", fetch = FetchType.LAZY)
     private Set<TrackParcel> trackParcels;
 
     private Boolean delivered = false;
-    private Date lastUpdate = new Date();
+    @JsonFormat(pattern = "dd/MM/yyyy")
+    private LocalDate lastUpdate = LocalDate.now();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "parcel", fetch = FetchType.LAZY)
     private Set<Order> parcelOrders = new HashSet<>();
 
-    public Parcel() {
-    }
 
     public Parcel(String trackNumber) {
         this.trackNumber = trackNumber;
     }
 
-
-    public Parcel(Long parcelId, String trackNumber, String lastStatus, Set<TrackParcel> trackParcels, Boolean delivered, Date lastUpdate, Set<Order> parcelOrders) {
-        this.parcelId = parcelId;
-        this.trackNumber = trackNumber;
-        this.lastStatus = lastStatus;
-        this.trackParcels = trackParcels;
-        this.delivered = delivered;
-        this.lastUpdate = lastUpdate;
-        this.parcelOrders = parcelOrders;
-    }
-
-    public Parcel(String trackNumber, String lastStatus, Date lastUpdate, boolean delivered) {
+    public Parcel(String trackNumber, String lastStatus, LocalDate lastUpdate, boolean delivered) {
         this.trackNumber = trackNumber;
         this.lastStatus = lastStatus;
         this.lastUpdate = lastUpdate;
@@ -59,60 +63,14 @@ public class Parcel {
         this.trackNumber = trackNumber;
     }
 
-    public Long getParcelId() {
-        return parcelId;
-    }
-
-    public void setParcelId(Long id) {
-        this.parcelId = id;
-    }
-
-    public String getTrackNumber() {
-        return trackNumber;
-    }
-
-    public void setTrackNumber(String trackNumber) {
+    public Parcel(String trackNumber, LocalDate shippingDate) {
         this.trackNumber = trackNumber;
+        this.shippingDate = shippingDate;
     }
 
-    public Boolean getDelivered() {
-        return delivered;
-    }
-
-    public void setDelivered(Boolean delivered) {
-        this.delivered = delivered;
-    }
-
+    @Transient
     public Set<TrackParcel> getTrackParcels() {
         return this.trackParcels.stream().sorted(new TrackParcelComparator().reversed()).collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-    public void setTrackParcels(Set<TrackParcel> trackParcels) {
-        this.trackParcels = trackParcels;
-    }
-
-    public Set<Order> getParcelOrders() {
-        return parcelOrders;
-    }
-
-    public void setParcelOrders(Set<Order> parcelOrders) {
-        this.parcelOrders = parcelOrders;
-    }
-
-
-    public Date getLastUpdate() {
-        return lastUpdate;
-    }
-
-    public void setLastUpdate(Date lastUpdate) {
-        this.lastUpdate = lastUpdate;
-    }
-
-    public String getLastStatus() {
-        return lastStatus;
-    }
-
-    public void setLastStatus(String lastStatus) {
-        this.lastStatus = lastStatus;
-    }
 }

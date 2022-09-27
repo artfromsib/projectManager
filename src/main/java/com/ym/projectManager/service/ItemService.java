@@ -2,22 +2,16 @@ package com.ym.projectManager.service;
 
 import com.ym.projectManager.model.Item;
 import com.ym.projectManager.model.ItemSection;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-
 import java.util.List;
 import java.util.Optional;
 
 public interface ItemService {
 
-
-    Item createOrUpdateItem(Item item, Optional<String> newSection);
-
+    Item createOrUpdateItem(Item item, Optional<ItemSection> newSection);
 
     List<Item> getAllItems();
 
-
-    Optional<Item> getItemById(Long id);
+    Item getItemById(Long id);
 
     List<Item> getItemsBySection(Long sectionId);
 
@@ -25,8 +19,11 @@ public interface ItemService {
 
     void deleteItem(Long id);
 
-    Page<Item> getItemsBySelectedParam(PageRequest pageable, int totalItems, Boolean addSection,
-                                       Long selectedSectionId, Boolean addStatus, String selectedStatus);
+    ItemSection createItemSection(String section);
 
-    Page<Item> getAllItemsPaginated(PageRequest of, int totalPages);
+    List<ItemSection> getItemSections();
+
+    List<Item> getItemsByStatus(String itemStatus);
+
+    List<Item> getItemsByStatusAndSection(String status, Long sectionId);
 }

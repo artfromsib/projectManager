@@ -1,6 +1,7 @@
 package com.ym.projectManager.service;
 
 
+import com.ym.projectManager.dto.OrderItemDto;
 import com.ym.projectManager.model.Customer;
 import com.ym.projectManager.model.Item;
 import com.ym.projectManager.model.Order;
@@ -11,6 +12,12 @@ import java.util.Optional;
 
 public interface OrderService {
 
+    List<OrderItemDto> getAllOrderItemDto();
+
+    OrderItemDto getOrderItemDto(Long id);
+
+    OrderItemDto createOrUpdateOrder(OrderItemDto form);
+
     Order saveOrderWithItemsCustomerAndParcel(Order order, List<Item> items, Customer customer);
 
     List<Order> getAllOrders();
@@ -19,7 +26,7 @@ public interface OrderService {
 
     void deleteOrderById(Long id);
 
-    List<Order> getOrdersByStatus(String status);
+    List<OrderItemDto> getOrdersByStatus(String status);
 
     void setOrderStatus(Long id, String status);
 

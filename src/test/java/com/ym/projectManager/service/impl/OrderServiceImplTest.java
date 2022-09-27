@@ -270,8 +270,8 @@ public class OrderServiceImplTest {
 
         assertNotNull(actualResult);
         assertEquals(orders.size(), actualResult.size());
-        assertEquals(orders.get(0).getOrderId(), actualResult.get(0).getOrderId());
-        assertEquals(STATUS_NEW, actualResult.get(0).getStatus());
+        assertEquals(orders.get(0).getOrderId(), actualResult.get(0).getOrderItems().get(0).getOrder().getOrderId());
+        assertEquals(STATUS_NEW, actualResult.get(0).getOrderItems().get(0).getOrder().getStatus());
         verify(orderRepository).findByStatusOrderByDateSaleDesc(Mockito.any());
     }
 

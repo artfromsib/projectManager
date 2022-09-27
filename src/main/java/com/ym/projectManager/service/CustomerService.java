@@ -9,4 +9,9 @@ public interface CustomerService {
 
     List<Customer> getAllCustomers();
 
+    Customer createOrUpdateCustomer(Customer customer);
+
+    Customer getCustomer(long id);
+
+    List<Customer> getCustomersByName(String name);
 }
